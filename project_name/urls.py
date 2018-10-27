@@ -15,8 +15,21 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.conf.urls import url, include
+from django.conf import settings
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    url(r'^admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+    url(r'^{}/'.format(settings.ADMIN_PATH), admin.site.urls),
 ]
+
+
+"""
+django-debug-toolbar for local development
+see: https://django-debug-toolbar.readthedocs.io
+"""
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

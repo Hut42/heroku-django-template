@@ -1,0 +1,7 @@
+django-heroku
+psycopg2-binary
+django-admin-honeypot
+django-currentuser
+django-debug-toolbar
+django-extensions
+python-dotenv

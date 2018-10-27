@@ -1,6 +1,6 @@
 # Heroku Django Starter Template
 
-An utterly fantastic project starter template for Django 2.0.
+An utterly fantastic project starter template for Django 1.11.
 
 ## Features
 
@@ -20,7 +20,7 @@ To use this project, follow these steps:
 
 Using this template to create a new Django app is easy::
 
-    $ django-admin.py startproject --template=https://github.com/heroku/heroku-django-template/archive/master.zip --name=Procfile helloworld
+    $ django-admin.py startproject --template=https://github.com/hut42/heroku-django-template/archive/master.zip --name=Procfile helloworld
 
 (If this doesn't work on windows, replace `django-admin.py` with `django-admin`)
 
