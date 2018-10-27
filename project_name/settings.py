@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.redirects',
     'django_extensions',
     'debug_toolbar',
+    'admin_honeypot',
 ]
 
 MIDDLEWARE = [
