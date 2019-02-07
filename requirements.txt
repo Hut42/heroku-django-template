@@ -6,3 +6,5 @@ django-currentuser
 django-debug-toolbar
 django-extensions
 python-dotenv
+gunicorn
+whitenoise
