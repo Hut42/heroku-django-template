@@ -151,6 +151,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
+locals()['DATABASES']['default'] = dj_database_url.config(
+    conn_max_age=django_heroku.MAX_CONN_AGE,
+    ssl_require=not DEBUG
+)
 
 # Remove this when using a multi site layout
 SITE_ID = 1
