@@ -1,7 +1,7 @@
 """{{ project_name }} URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/2.0/topics/http/urls/
+    https://docs.djangoproject.com/en/{{ docs_version }}/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,12 +15,12 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.conf.urls import url, include
+from django.urls import path, include
 from django.conf import settings
 
 urlpatterns = [
-    url(r'^admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
-    url(r'^{}/'.format(settings.ADMIN_PATH), admin.site.urls),
+    path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+    path(f'{settings.ADMIN_PATH}/', admin.site.urls),
 ]
 
 
@@ -31,5 +31,5 @@ see: https://django-debug-toolbar.readthedocs.io
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
+        path('__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
