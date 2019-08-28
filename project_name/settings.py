@@ -18,6 +18,7 @@ from dotenv import load_dotenv, find_dotenv
 from django.contrib.messages import constants as message_constants
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -188,6 +189,9 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'local')
+SENTRY_ENVIRONMENT = os.getenv('SENTRY_ENVIRONMENT', ENVIRONMENT)
+
 # Travis
 if 'TRAVIS' in os.environ:
     DATABASES = {
@@ -204,6 +208,21 @@ if 'TRAVIS' in os.environ:
 if os.getenv('SENTRY_DSN'):
     sentry_sdk.init(
         dsn=os.getenv('SENTRY_DSN'),
-        integrations=[DjangoIntegration()],
-        environment=os.getenv('SENTRY_ENVIRONMENT', 'local'),
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(),
+        ],
+        environment=SENTRY_ENVIRONMENT,
     )
+
+# Celery
+REDIS_URL = os.getenv('REDIS_URL')
+BROKER_URL = os.getenv('BROKER_URL', REDIS_URL)
+if BROKER_URL.startswith('sqs'):
+    CELERY_BROKER_TRANSPORT_OPTIONS = {
+        "region": "eu-west-1",
+        'queue_name_prefix': f'{{ project_name }}-{ENVIRONMENT.lower()}-',
+        'visibility_timeout': 360,
+        'polling_interval': 1
+    }
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', False)
