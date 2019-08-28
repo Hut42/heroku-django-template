@@ -218,7 +218,7 @@ if os.getenv('SENTRY_DSN'):
 # Celery
 REDIS_URL = os.getenv('REDIS_URL')
 BROKER_URL = os.getenv('BROKER_URL', REDIS_URL)
-if BROKER_URL.startswith('sqs'):
+if BROKER_URL and  BROKER_URL.startswith('sqs'):
     CELERY_BROKER_TRANSPORT_OPTIONS = {
         "region": "eu-west-1",
         'queue_name_prefix': f'{{ project_name }}-{ENVIRONMENT.lower()}-',
