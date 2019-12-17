@@ -1,5 +1,4 @@
 # !/bin/bash
 
 echo "Generate private auth for requirements.txt"
-echo -e "$(eval "echo -e \"`<requirements.txt`\"")" > requirements.txt
-cat requirements.txt
+echo -e "$(eval "echo -e \"`<requirements_private.txt`\"")" >> requirements.txt
