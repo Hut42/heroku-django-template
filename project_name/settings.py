@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'debug_toolbar',
     'admin_honeypot',
-    'microservice',
 ]
 
 MIDDLEWARE = [
