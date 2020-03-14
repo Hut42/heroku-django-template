@@ -158,6 +158,9 @@ STATICFILES_DIRS = [
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Ensure STATIC_ROOT exists.
+os.makedirs(STATIC_ROOT, exist_ok=True)
+
 # Remove this when using a multi site layout
 SITE_ID = 1
 
