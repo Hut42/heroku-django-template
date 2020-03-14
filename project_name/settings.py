@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/{{ docs_version }}/ref/settings/
 
 
 import os
+import sys
 import dj_database_url
-import django_heroku
 from dotenv import load_dotenv, find_dotenv
 from django.contrib.messages import constants as message_constants
 import sentry_sdk
@@ -128,8 +128,14 @@ USE_TZ = True
 
 # Change 'default' database configuration with $DATABASE_URL.
 DATABASE_URL = os.getenv('DATABASE_URL')
+DISABLE_DATABASE_SSL_REQUIRE = os.getenv('DISABLE_DATABASE_SSL_REQUIRE', False)
 if DATABASE_URL:
-    DATABASES['default'].update(dj_database_url.config(conn_max_age=500))
+    DATABASES['default'].update(
+        dj_database_url.config(
+            conn_max_age=600,
+            ssl_require=not DISABLE_DATABASE_SSL_REQUIRE,
+        ),
+    )
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -151,14 +157,6 @@ STATICFILES_DIRS = [
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Activate Django-Heroku.
-django_heroku.settings(locals())
-if DATABASE_URL:
-    locals()['DATABASES']['default'] = dj_database_url.config(
-        conn_max_age=django_heroku.MAX_CONN_AGE,
-        ssl_require=not DEBUG
-    )
 
 # Remove this when using a multi site layout
 SITE_ID = 1
@@ -189,8 +187,6 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'local')
-SENTRY_ENVIRONMENT = os.getenv('SENTRY_ENVIRONMENT', ENVIRONMENT)
 
 # Travis
 if 'TRAVIS' in os.environ:
@@ -205,6 +201,8 @@ if 'TRAVIS' in os.environ:
     }
 
 # Sentry
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'local')
+SENTRY_ENVIRONMENT = os.getenv('SENTRY_ENVIRONMENT', ENVIRONMENT)
 if os.getenv('SENTRY_DSN'):
     sentry_sdk.init(
         dsn=os.getenv('SENTRY_DSN'),
@@ -226,3 +224,39 @@ if BROKER_URL and  BROKER_URL.startswith('sqs'):
         'polling_interval': 1
     }
 CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', False)
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': ('%(asctime)s [%(process)d] [%(levelname)s] ' +
+                       'pathname=%(pathname)s lineno=%(lineno)s ' +
+                       'funcname=%(funcName)s %(message)s'),
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        }
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            'stream': sys.stdout
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': True,
+        },
+    },
+}
