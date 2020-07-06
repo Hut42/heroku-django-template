@@ -1,8 +1,54 @@
 name: DeployToEBS
-on: push
+on:
+  push:
+    branches:
+     - master
+     - develop
+
 jobs:
+  test:
+    runs-on: ubuntu-18.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_BD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+
+    - name: Install platform dependencies
+      run: sudo apt install libcurl4-openssl-dev libssl-dev
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Install EBS platform dependencies
+      run: pip install -r requirements_ebs.txt
+
+    - name: Install Heroku platform dependencies
+      run: pip install -r requirements_heroku.txt
+
+    - name: Install private dependencies
+      run: pip install -r requirements_private.txt
+      env:
+        FURY_AUTH: ${{ secrets.FURY_AUTH }}
+
+    - name: Run tests
+      run: python manage.py check
+
   deploy:
     runs-on: ubuntu-18.04
+    needs: test
+
     steps:
     - uses: actions/checkout@v2
 
@@ -21,6 +67,7 @@ jobs:
         echo ::set-env name=AWS_SECRET_ACCESS_KEY::${{ secrets.AWS_SECRET_ACCESS_KEY }}
         echo ::set-env name=AWS_DEFAULT_REGION::${{ secrets.AWS_DEFAULT_REGION }}
         echo ::set-env name=EBS_APPLICATION_NAME::${{ secrets.EBS_APPLICATION_NAME }}
+        echo ::set-env name=EBS_TEST_ENVIRONMENT_NAME::${{ secrets.EBS_TEST_ENVIRONMENT_NAME }}
 
     - name: Zip bundle
       run: zip -r ${RELASE_BUNDLE_NAME} . -x ".git/*" ".github/*"
@@ -28,5 +75,9 @@ jobs:
     - name: Upload to S3
       run: aws s3 cp ${RELASE_BUNDLE_NAME} s3://elasticbeanstalk-eu-west-1-637939682328/
 
-    - name: Deploy to EBS
+    - name: Deploy Application Version to EBS
       run: aws elasticbeanstalk create-application-version --application-name ${EBS_APPLICATION_NAME} --version-label ${VERSION_LABEL} --description "${DESCRIPTION}" --source-bundle S3Bucket="elasticbeanstalk-eu-west-1-637939682328",S3Key="${RELASE_BUNDLE_NAME}"
+
+    - name: Update non-master (non-live) environment for application version
+      if: endsWith(github.ref, 'develop') == true
+      run: aws elasticbeanstalk update-environment --application-name ${EBS_APPLICATION_NAME} --environment-name ${EBS_TEST_ENVIRONMENT_NAME} --version-label ${VERSION_LABEL}
