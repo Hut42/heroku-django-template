@@ -1,0 +1,32 @@
+name: DeployToEBS
+on: push
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set version label
+      run: echo ::set-env name=VERSION_LABEL::${GITHUB_REPOSITORY#*/}-${GITHUB_REF##*/}-${GITHUB_SHA}
+
+    - name: Set release bundle name
+      run:  echo ::set-env name=RELASE_BUNDLE_NAME::${VERSION_LABEL}.zip
+
+    - name: Set description
+      run: echo ::set-env name=DESCRIPTION::$(git log --format=%B -n 1 ${{ github.event.after }})
+
+    - name: Set AWS config
+      run: |
+        echo ::set-env name=AWS_ACCESS_KEY_ID::${{ secrets.AWS_ACCESS_KEY_ID }}
+        echo ::set-env name=AWS_SECRET_ACCESS_KEY::${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        echo ::set-env name=AWS_DEFAULT_REGION::${{ secrets.AWS_DEFAULT_REGION }}
+        echo ::set-env name=EBS_APPLICATION_NAME::${{ secrets.EBS_APPLICATION_NAME }}
+
+    - name: Zip bundle
+      run: zip -r ${RELASE_BUNDLE_NAME} . -x ".git/*" ".github/*"
+
+    - name: Upload to S3
+      run: aws s3 cp ${RELASE_BUNDLE_NAME} s3://elasticbeanstalk-eu-west-1-637939682328/
+
+    - name: Deploy to EBS
+      run: aws elasticbeanstalk create-application-version --application-name ${EBS_APPLICATION_NAME} --version-label ${VERSION_LABEL} --description "${DESCRIPTION}" --source-bundle S3Bucket="elasticbeanstalk-eu-west-1-637939682328",S3Key="${RELASE_BUNDLE_NAME}"

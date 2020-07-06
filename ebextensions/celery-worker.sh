@@ -7,7 +7,7 @@ celeryenv=${celeryenv%?}
 # Create celery configuraiton script
 celeryconf="[program:celeryd-worker]
 ; Set full path to celery program if using virtualenv
-command=/opt/python/run/venv/bin/celery worker -A {{ project_name }} -P solo --loglevel=DEBUG -n worker.%%h
+command=/opt/python/run/venv/bin/celery worker -A {{ project_name }} -P solo --loglevel=ERROR -n worker.%%h
 
 directory=/opt/python/current/app
 user=nobody
