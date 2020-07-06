@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
+from django.http import HttpResponse
 
 urlpatterns = [
+    path('up/', lambda request: HttpResponse('UP'), name='up'),
     path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
     path(f'{settings.ADMIN_PATH}/', admin.site.urls),
 ]
