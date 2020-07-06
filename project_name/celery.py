@@ -1,8 +1,13 @@
 import os
+import logging
 
 from django.conf import settings
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import user_passes_test
 
 from celery import Celery
+
+logger = logging.getLogger(__name__)
 
 
 # set the default Django settings module for the 'celery' program.
@@ -25,3 +30,14 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+
+@app.task(bind=True)
+def debug_task(self):
+    logger.info('Celery Request: {0!r}'.format(self.request))
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(["GET"])
+def debug_celery_view(request):
+    debug_task.delay()

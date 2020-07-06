@@ -19,8 +19,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.http import HttpResponse
 
+from .celery import debug_celery_view
+
 urlpatterns = [
     path('up/', lambda request: HttpResponse('UP'), name='up'),
+    path('celery/', debug_celery_view, name='debug_celery_view'),
     path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
     path(f'{settings.ADMIN_PATH}/', admin.site.urls),
 ]
