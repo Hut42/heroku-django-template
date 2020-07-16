@@ -7,7 +7,6 @@ on:
 
 jobs:
   test:
-    if: secrets.RUN_CI == "1"
     runs-on: ubuntu-18.04
     services:
       postgres:
