@@ -7,6 +7,7 @@ on:
 
 jobs:
   test:
+    if: secrets.RUN_CI == "1"
     runs-on: ubuntu-18.04
     services:
       postgres:
@@ -33,9 +34,6 @@ jobs:
 
     - name: Install EBS platform dependencies
       run: pip install -r requirements_ebs.txt
-
-    - name: Install Heroku platform dependencies
-      run: pip install -r requirements_heroku.txt
 
     - name: Install private dependencies
       run: pip install -r requirements_private.txt
@@ -79,5 +77,5 @@ jobs:
       run: aws elasticbeanstalk create-application-version --application-name ${EBS_APPLICATION_NAME} --version-label ${VERSION_LABEL} --description "${DESCRIPTION}" --source-bundle S3Bucket="elasticbeanstalk-eu-west-1-637939682328",S3Key="${RELASE_BUNDLE_NAME}"
 
     - name: Update non-master (non-live) environment for application version
-      if: endsWith(github.ref, 'develop') == true
+      if: endsWith(github.ref, 'master') == false
       run: aws elasticbeanstalk update-environment --application-name ${EBS_APPLICATION_NAME} --environment-name ${EBS_TEST_ENVIRONMENT_NAME} --version-label ${VERSION_LABEL}
