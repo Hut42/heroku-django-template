@@ -9,16 +9,13 @@ https://docs.djangoproject.com/en/{{ docs_version }}/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/{{ docs_version }}/ref/settings/
 """
-
-
 import os
 import sys
 import dj_database_url
 from dotenv import load_dotenv, find_dotenv
-from django.contrib.messages import constants as message_constants
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.celery import CeleryIntegration
+from django.contrib.messages import constants as message_constants
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +34,6 @@ SECRET_KEY = os.getenv('SECRET_KEY', "{{ secret_key }}")
 DEBUG = os.getenv('DEBUG', False)
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,7 +49,6 @@ INSTALLED_APPS = [
     'django.contrib.redirects',
     'django_extensions',
     'debug_toolbar',
-    'admin_honeypot',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +62,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
-    'django_currentuser.middleware.ThreadLocalUserMiddleware',
 ]
 
 ROOT_URLCONF = '{{ project_name }}.urls'
@@ -183,25 +177,12 @@ MESSAGE_TAGS = {
 }
 
 # In case you need mail...
-MAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
-
-
-# Travis
-if 'TRAVIS' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'test',
-            'USER': 'postgres',
-            'HOST': 'localhost',
-            'PORT': 5432,
-        }
-    }
 
 # Sentry
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'local')
@@ -211,22 +192,9 @@ if os.getenv('SENTRY_DSN'):
         dsn=os.getenv('SENTRY_DSN'),
         integrations=[
             DjangoIntegration(),
-            CeleryIntegration(),
         ],
         environment=SENTRY_ENVIRONMENT,
     )
-
-# Celery
-REDIS_URL = os.getenv('REDIS_URL')
-BROKER_URL = os.getenv('BROKER_URL', REDIS_URL)
-if BROKER_URL and  BROKER_URL.startswith('sqs'):
-    CELERY_BROKER_TRANSPORT_OPTIONS = {
-        "region": "eu-west-1",
-        'queue_name_prefix': f'{{ project_name }}-{ENVIRONMENT.lower()}-',
-        'visibility_timeout': 360,
-        'polling_interval': 1
-    }
-CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', False)
 
 # Logging
 LOGGING = {

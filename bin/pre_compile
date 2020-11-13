@@ -1,6 +1,3 @@
 # !/bin/bash
-
-echo "Generate private auth for private requirements in requirements_private.txt"
-echo -e "$(eval "echo -e \"`<requirements_heroku.txt`\"")" >> requirements.txt
-echo "Add Heroku specific requirements in requirements_heroku.txt"
+echo "Add private requirements in requirements_private.txt"
 echo -e "$(eval "echo -e \"`<requirements_private.txt`\"")" >> requirements.txt
