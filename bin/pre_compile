@@ -1,3 +1,3 @@
 # !/bin/bash
-echo "Add private requirements in requirements_private.txt"
-echo -e "$(eval "echo -e \"`<requirements_private.txt`\"")" >> requirements.txt
+echo "Generate auth for private packages in requirements.txt"
+echo -e "$(eval "echo -e \"`<requirements.txt`\"")" > requirements.txt
